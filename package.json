@@ -1,7 +1,8 @@
 {
-  "name": "cloudflare-workers-openapi",
+  "name": "@cowlsly/database-backend",
   "version": "0.0.1",
   "private": true,
+  "description": "Cowlsly-maintained Cloudflare Workers backend fork. Current publisher: Cowlsly. Support: Cowlsly@zohomail.com.au",
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
