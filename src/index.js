@@ -97,14 +97,13 @@ app.post('/getUser', async (c) => {
   const isValid = await bcrypt.compare(Password, pw.Password);
 
   if (!isValid) {
-    return c.json({ success: false, error: 'Invalid password' + pw.Password }, 401)
+    return c.json({ success: false, error: 'Invalid password' }, 401)
   }
   else{
     const payload = {
       Email: email,
       TeamCode: pw['Team Code'],
       Name: pw.Name,
-      Password: pw.Password,
       Role: pw.Role,
       TimeTable: pw['Time Table']
     }
