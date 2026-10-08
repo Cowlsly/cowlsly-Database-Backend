@@ -3,14 +3,17 @@ on:
   pull_request:
   push:
     branches:
+      - main
       - dependabot/npm_and_yarn/hono-4.13.7
+permissions:
+  contents: read
 jobs:
   dependency-smoke:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -22,3 +25,27 @@ jobs:
           node --input-type=module -e "import { Hono } from 'hono'; import fs from 'node:fs'; const p=JSON.parse(fs.readFileSync('node_modules/hono/package.json')); if (p.version !== '4.13.7') throw new Error('Unexpected Hono version: '+p.version); const app=new Hono(); app.get('/health',c=>c.json({ok:true})); const r=await app.request('/health'); if(r.status!==200 || !(await r.json()).ok) throw new Error('Hono smoke failed');"
       - name: Check dependency tree
         run: npm ls --all
+      - name: Application regression tests (routing, middleware, security responses)
+        run: npm test
+
+  workers-bundle:
+    # Bundles the Worker with Wrangler without deploying (no credentials, no Cloudflare API calls for deploy).
+    runs-on: ubuntu-latest
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Wrangler dry-run bundle
+        run: npx wrangler deploy --dry-run --outdir dist
+      - name: Bundle contains the Worker entry and Hono
+        run: |
+          ls -la dist
+          test -s dist/index.js
+          grep -q "Invalid sign" dist/index.js
