@@ -1,0 +1,24 @@
+name: Hono dependency verification
+on:
+  pull_request:
+  push:
+    branches:
+      - dependabot/npm_and_yarn/hono-4.13.7
+jobs:
+  dependency-smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install exact lockfile dependencies
+        run: npm ci --ignore-scripts
+      - name: Verify Hono import and pinned minimum
+        run: |
+          node --input-type=module -e "import { Hono } from 'hono'; import fs from 'node:fs'; const p=JSON.parse(fs.readFileSync('node_modules/hono/package.json')); if (p.version !== '4.13.7') throw new Error('Unexpected Hono version: '+p.version); const app=new Hono(); app.get('/health',c=>c.json({ok:true})); const r=await app.request('/health'); if(r.status!==200 || !(await r.json()).ok) throw new Error('Hono smoke failed');"
+      - name: Check dependency tree
+        run: npm ls --all
