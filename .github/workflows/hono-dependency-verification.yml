@@ -28,23 +28,6 @@ jobs:
       - name: Application regression tests (routing, middleware, security responses)
         run: npm test
 
-  previous-hono-comparison:
-    # Informational: the same suite against the pre-upgrade Hono to spot behaviour changes from the upgrade.
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npm install --no-save --ignore-scripts hono@4.8.5
-      - run: node -e "console.log('hono', require('./node_modules/hono/package.json').version)"
-      - run: npm test
-
   workers-bundle:
     # Bundles the Worker with Wrangler without deploying (no credentials, no Cloudflare API calls for deploy).
     runs-on: ubuntu-latest
